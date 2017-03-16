@@ -1,0 +1,12 @@
+#Local Compiler Defines
+#This is a PC application...not cross compiled...we will just use the default
+#gcc and binutils...
+EXE = pc_comm
+
+CC      = gcc
+LD      = gcc
+CP      = objcopy
+OD      = objdump
+AS      = as
+
+LOCAL_CFLAGS =
