@@ -2,7 +2,7 @@
 #have to modify this Makefile.
 include makefile.local
 
-SOURCES_PROJECT = main_pc_comm.c pc_serial.c read_thread.c keyboard.c
+SOURCES_PROJECT = main_pc_comm.c pc_serial.c read_thread.c keyboard.c generic_packet.c gp_receive.c
 
 SOURCES = $(SOURCES_PROJECT)
 OBJECTS = $(SOURCES:.c=.o)
@@ -13,10 +13,11 @@ OBJ_OBJECTS := $(addprefix $(OBJ_DIR)/, $(OBJECTS))
 
 #Where to find sources
 LOCAL_SRC_DIR = src
-VPATH = $(LOCAL_SRC_DIR)
+VPATH = $(LOCAL_SRC_DIR) $(GENERIC_PACKET_SRC_DIR)
 
 
 CFLAGS  =  -I. -IInclude -Iinclude -Iinc \
+	-I$(GENERIC_PACKET_INC_DIR) \
 	-c -fno-common -O2 -g  \
 	$(LOCAL_CFLAGS)
 LFLAGS  =

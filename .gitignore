@@ -3,3 +3,4 @@
 *.elf
 *.lst
 *.o
+*.out
