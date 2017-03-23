@@ -87,8 +87,11 @@ void *packet_handling_thread(void *ptr)
 
                               for(ii=0; ii<VOSPI_COLS; ii++)
                               {
-                                 pixel_index = get_index(ii, vospi_frame.number);
-                                 pixels[pixel_index] = ((uint16_t)vospi_frame.data[ii*2+1+4]<<8) + (uint16_t)vospi_frame.data[ii*2+4];
+                                 if(vospi_frame.number < VOSPI_ROWS)
+                                 {
+                                    pixel_index = get_index(ii, vospi_frame.number);
+                                    pixels[pixel_index] = ((uint16_t)vospi_frame.data[ii*2+1+4]<<8) + (uint16_t)vospi_frame.data[ii*2+4];
+                                 }
                               }
 
 
