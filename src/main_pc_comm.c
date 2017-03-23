@@ -72,6 +72,8 @@ int main(int argc, char *argv[])
 
     serial_write_array((uint8_t *)test_str, strlen(test_str), &bytes_written);
 
+
+    create_packet_handling_thread();
     create_read_thread();
 
 
@@ -89,7 +91,7 @@ int main(int argc, char *argv[])
     }while(cont);
 
     join_read_thread();
-
+    join_packet_handling_thread();
 
     return 0;
 
