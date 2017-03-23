@@ -2,7 +2,7 @@
 #have to modify this Makefile.
 include makefile.local
 
-SOURCES_PROJECT = main_pc_comm.c pc_serial.c read_thread.c packet_handling_thread.c keyboard.c generic_packet.c gp_receive.c gp_proj_thermal.c gp_proj_universal.c
+SOURCES_PROJECT = main_pc_comm.c pc_serial.c read_thread.c packet_handling_thread.c keyboard.c generic_packet.c gp_receive.c gp_proj_thermal.c gp_proj_universal.c create_image.c palettes.c
 
 SOURCES = $(SOURCES_PROJECT)
 OBJECTS = $(SOURCES:.c=.o)
@@ -21,7 +21,7 @@ CFLAGS  =  -I. -IInclude -Iinclude -Iinc \
 	-c -fno-common -O2 -g  \
 	$(LOCAL_CFLAGS)
 LFLAGS  =
-LFLAGS_END = -lpthread
+LFLAGS_END = -lpthread -lnetpbm
 CPFLAGS = -Obinary
 ODFLAGS = -S
 

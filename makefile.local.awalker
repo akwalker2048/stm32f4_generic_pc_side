@@ -12,5 +12,5 @@ AS      = as
 GENERIC_PACKET_SRC_DIR = ../stm32f4_generic_packet/src
 GENERIC_PACKET_INC_DIR = ../stm32f4_generic_packet/include
 
-LOCAL_CFLAGS = -D"PC_DEBUG_ON"
-#LOCAL_CFLAGS =
+#LOCAL_CFLAGS = -D"PC_DEBUG_ON"
+LOCAL_CFLAGS =

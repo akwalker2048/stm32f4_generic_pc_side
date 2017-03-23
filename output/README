@@ -1,0 +1,3 @@
+/* Useful command line stuff. */
+/* convert -delay 6 -quality 95 image_*ppm movie.mpg */
+/* vlc movie.mpg */

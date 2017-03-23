@@ -10,6 +10,7 @@
 #include "keyboard.h"
 #include "pc_serial.h"
 #include "read_thread.h"
+#include "packet_handling_thread.h"
 
 int main(int argc, char *argv[])
 {

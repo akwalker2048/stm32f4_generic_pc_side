@@ -4,6 +4,14 @@
 
 #include "packet_handling_thread.h"
 
+#include "create_image.h"
+
+
+#define NUM_PIXELS (VOSPI_ROWS * VOSPI_COLS)
+uint16_t pixels[NUM_PIXELS];
+int pixel_index;
+uint8_t image_num = 0;
+
 uint8_t cont_packet_handling_thread = 1;
 pthread_t packet_handling_thread_ref;
 
@@ -19,6 +27,8 @@ void *packet_handling_thread(void *ptr)
 
    VOSPIFrame vospi_frame;
    uint32_t timestamp;
+
+   uint32_t ii;
 
    while(cont_packet_handling_thread)
    {
@@ -73,7 +83,21 @@ void *packet_handling_thread(void *ptr)
                            if(retval == GP_SUCCESS)
                            {
                               /* We got a good frame...now what? */
-                              printf("%u:We got a good lepton frame! h(%u) t(%u)\n", vospi_frame.number, gp_circ_buffer_head, gp_circ_buffer_tail);
+                              printf("%u(%u):We got a good lepton frame! h(%u) t(%u)\n", vospi_frame.number, vospi_frame.type, gp_circ_buffer_head, gp_circ_buffer_tail);
+
+                              for(ii=0; ii<VOSPI_COLS; ii++)
+                              {
+                                 pixel_index = get_index(ii, vospi_frame.number);
+                                 pixels[pixel_index] = ((uint16_t)vospi_frame.data[ii*2+1+4]<<8) + (uint16_t)vospi_frame.data[ii*2+4];
+                              }
+
+
+                              if(vospi_frame.number == 59)
+                              {
+                                 image_num++;
+                                 create_image(pixels, VOSPI_COLS, VOSPI_ROWS, image_num);
+                              }
+
                            }
                            else
                            {
