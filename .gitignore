@@ -6,3 +6,7 @@
 *.out
 *.ppm
 *.mpg
+*.pgm
+*.jpg
+*.gif
+*.mp4

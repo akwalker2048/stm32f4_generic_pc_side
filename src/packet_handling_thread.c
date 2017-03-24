@@ -5,7 +5,7 @@
 #include "packet_handling_thread.h"
 
 #include "create_image.h"
-
+#include "create_image_rgb.h"
 
 #define NUM_PIXELS (VOSPI_ROWS * VOSPI_COLS)
 uint16_t pixels[NUM_PIXELS];
@@ -99,6 +99,7 @@ void *packet_handling_thread(void *ptr)
                               {
                                  image_num++;
                                  create_image(pixels, VOSPI_COLS, VOSPI_ROWS, image_num);
+                                 create_image_rgb(pixels, VOSPI_COLS, VOSPI_ROWS, image_num);
                               }
 
                            }

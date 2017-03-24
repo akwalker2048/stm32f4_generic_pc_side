@@ -44,9 +44,9 @@ int create_image(uint16_t *pixels, uint16_t num_cols, uint16_t num_rows, uint8_t
     /* image = pgm_readpgm(stdin, &cols, &rows, &max); */
 
     max = 0xFF;
-    image = pgm_allocarray(num_rows, num_cols);
+    image = pgm_allocarray(num_cols, num_rows);
 
-    /* make image half as intense (darker) */
+
     min_value = 0xFFFF;
     max_value = 0;
     for (y=0; y<num_rows; y++)
@@ -88,11 +88,11 @@ int create_image(uint16_t *pixels, uint16_t num_cols, uint16_t num_rows, uint8_t
     }
 
     /* write the modified image to stdout */
-    snprintf(fname, 2047, "./output/image_%03u.ppm", image_num);
+    snprintf(fname, 2047, "./output/image_%03u.pgm", image_num);
     output = fopen(fname, "w");
     if(output != NULL)
     {
-       pgm_writepgm(output, image, num_rows, num_cols, max, 1);
+       pgm_writepgm(output, image, num_cols, num_rows, max, 1);
        fclose(output);
     }
 
@@ -113,7 +113,7 @@ int get_index(int col, int row)
       col = (VOSPI_COLS-1);
    }
 
-   index = row*VOSPI_ROWS + col;
+   index = row*VOSPI_COLS + col;
 
    return index;
 }
