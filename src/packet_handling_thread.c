@@ -30,6 +30,8 @@ void *packet_handling_thread(void *ptr)
 
    uint32_t ii;
 
+   char codever[256];
+
    while(cont_packet_handling_thread)
    {
       while(gp_circ_buffer_head != gp_circ_buffer_tail)
@@ -63,6 +65,10 @@ void *packet_handling_thread(void *ptr)
                      case UNIVERSAL_WORD:
                         break;
                      case UNIVERSAL_FLOAT:
+                        break;
+                     case UNIVERSAL_CODE_VER:
+                        retval = extract_universal_code_ver(gp_ptr, codever);
+                        printf("Code Version:  %s\n", codever);
                         break;
                      default:
                         /* Unhandled packet within project. */
