@@ -31,6 +31,7 @@ void *packet_handling_thread(void *ptr)
    uint32_t ii;
 
    char codever[256];
+   char ustr[256];
 
    while(cont_packet_handling_thread)
    {
@@ -55,8 +56,11 @@ void *packet_handling_thread(void *ptr)
                         printf("timestamp:  %u\n", timestamp);
                         break;
                      case UNIVERSAL_ACK:
+                        printf("We got an ACK!\n");
                         break;
                      case UNIVERSAL_STRING:
+                        retval = extract_universal_string(gp_ptr, ustr);
+                        printf("UNIVERSAL_STRING:  %s\n", ustr);
                         break;
                      case UNIVERSAL_BYTE:
                         break;

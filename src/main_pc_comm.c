@@ -25,6 +25,10 @@ int main(int argc, char *argv[])
     char *test_str="test string!";
     ssize_t bytes_written;
 
+    int jj;
+
+    GenericPacket gp;
+
     /* baudrate 115200, 8 bits, no parity, 1 stop bit */
     /* #define  B57600   0010001 */
     /* #define  B115200  0010002 */
@@ -45,6 +49,8 @@ int main(int argc, char *argv[])
 
     ispeed = B3000000;
     ospeed = B3000000;
+    /* ispeed = B115200; */
+    /* ospeed = B115200; */
     if(argc == 1)
     {
 
@@ -71,12 +77,11 @@ int main(int argc, char *argv[])
     }
 
 
-    serial_write_array((uint8_t *)test_str, strlen(test_str), &bytes_written);
-
-
     create_packet_handling_thread();
     create_read_thread();
 
+    /* retval = create_universal_code_ver(&gp, test_str); */
+    /* serial_write_array(gp.gp, gp.packet_length, &bytes_written); */
 
 
     /* simple noncanonical input */
@@ -87,6 +92,21 @@ int main(int argc, char *argv[])
        if(key == 'x')
        {
           cont = 0;
+       }
+       else if(key == 't')
+       {
+          /* serial_write_array((uint8_t *)test_str, strlen(test_str), &bytes_written); */
+          /* uint8_t create_universal_code_ver(GenericPacket *packet, char *codever); */
+          retval = create_universal_code_ver(&gp, test_str);
+          /* retval = create_universal_ack(&gp); */
+          printf("Write universal code version packet! Length = %u\n", gp.packet_length);
+          printf("Send:\n");
+          for(jj=0; jj<gp.packet_length; jj++)
+          {
+             printf("0x%2X ", gp.gp[jj]);
+          }
+          printf("\nReceive:\n");
+          serial_write_array(gp.gp, gp.packet_length, &bytes_written);
        }
 
     }while(cont);

@@ -63,11 +63,12 @@ void *read_thread(void *ptr)
             }
 
 
-            /* for(ii=0; ii<bytes_read; ii++) */
-            /* { */
-            /*    printf("0x%02X ", read_buffer[ii]); */
-            /* } */
-            /* printf("\n"); */
+
+            for(ii=0; ii<bytes_read; ii++)
+            {
+               printf("0x%02X ", read_buffer[ii]);
+            }
+            printf("\n");
 
             /* for(ii=0; ii<bytes_read; ii++) */
             /* { */
@@ -81,6 +82,7 @@ void *read_thread(void *ptr)
             /*    } */
             /* } */
             /* printf("\n"); */
+
             fflush(stdout);
          }
       }

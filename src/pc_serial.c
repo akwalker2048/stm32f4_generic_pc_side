@@ -128,20 +128,60 @@ uint8_t set_serial_interface_attribs(int ispeed, int ospeed)
 /* Read and Write Functions */
 uint8_t serial_write_array(uint8_t *bytes_to_write, uint32_t num_bytes_to_write, ssize_t *num_bytes_written)
 {
+   uint32_t remainder, additional, new_num;
+   uint8_t cpy_bytes[512];
+   uint32_t ii;
+
+
+   /* 4 Byte Boundary!
+    *   This is needed to work with the STM32F4 family of parts when using
+    *   DMA.  The parts require that a FIFO be used and the smallest
+    *   chunk is 4 bytes.  If you do not write multiples of 4 bytes...
+    *   the remainder is not written to memory (it's still in the FIFO)...
+    *   but the NDTR register has already decremented which would normally
+    *   indicate that a transfer took place.
+    */
+   remainder = num_bytes_to_write%4;
+   if(remainder != 0)
+   {
+      additional = 4 - remainder;
+   }
+   else
+   {
+      additional = 0;
+   }
+   new_num = num_bytes_to_write + additional;
+
+   /* printf("num_bytes_to_write:\t%u\n", num_bytes_to_write); */
+   /* printf("remainder:\t%u\n", remainder); */
+   /* printf("additional:\t%u\n", additional); */
+   /* printf("new_num:\t%u\n", new_num); */
+
+   for(ii=0; ii<num_bytes_to_write; ii++)
+   {
+      cpy_bytes[ii] = bytes_to_write[ii];
+   }
+   for(ii=num_bytes_to_write; ii<(new_num); ii++)
+   {
+      cpy_bytes[ii] = 0x00;
+   }
+
 
    if(fd != 0)
    {
       pthread_mutex_lock(&serial_mutex);
 
-      *num_bytes_written = write(fd, bytes_to_write, num_bytes_to_write);
+      /* *num_bytes_written = write(fd, bytes_to_write, num_bytes_to_write); */
+      *num_bytes_written = write(fd, cpy_bytes, new_num);
       if(*num_bytes_written < 0)
       {
          printf("Error from write: %ld, %d\n", *num_bytes_written, errno);
          return SERIAL_ERROR_WRITE;
       }
-      else if(*num_bytes_written != num_bytes_to_write)
+      else if(*num_bytes_written != new_num)
       {
          /* This should be rare! */
+         printf("Partial Write!\n");
          return SERIAL_ERROR_PARTIAL_WRITE;
       }
 
