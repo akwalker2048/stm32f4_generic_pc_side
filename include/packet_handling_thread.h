@@ -2,7 +2,7 @@
 #include "gp_receive.h"
 #include "gp_proj_thermal.h"
 #include "gp_proj_universal.h"
-
+#include "gp_proj_analog.h"
 
 void create_packet_handling_thread(void);
 void join_packet_handling_thread(void);

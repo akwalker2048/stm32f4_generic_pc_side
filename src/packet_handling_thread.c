@@ -33,6 +33,8 @@ void *packet_handling_thread(void *ptr)
    char codever[256];
    char ustr[256];
 
+   float voltage;
+
    while(cont_packet_handling_thread)
    {
       while(gp_circ_buffer_head != gp_circ_buffer_tail)
@@ -126,6 +128,24 @@ void *packet_handling_thread(void *ptr)
                         break;
                      default:
                         /* Unhandled Thermal Packet */
+                        break;
+                  }
+               }
+               break;
+            case GP_PROJ_ANALOG:
+               {
+                  switch(gp_ptr->gp[GP_LOC_PROJ_SPEC])
+                  {
+                     case ANALOG_VOLTAGE:
+                        retval = extract_analog_voltage(gp_ptr, &voltage);
+                        printf("Analog Voltage = %f!\n", voltage);
+                        break;
+                     case ANALOG_BATTERY_VOLTAGE:
+                        retval = extract_analog_voltage(gp_ptr, &voltage);
+                        printf("Analog Battery Voltage = %f!\n", voltage);
+                        break;
+                     default:
+                        /* Unhandled Analog Packet */
                         break;
                   }
                }
