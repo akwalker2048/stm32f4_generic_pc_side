@@ -11,6 +11,10 @@
 #include "pc_serial.h"
 #include "read_thread.h"
 #include "packet_handling_thread.h"
+#include "status_updates.h"
+#include "process_command.h"
+
+FILE *fid_sonar;
 
 int main(int argc, char *argv[])
 {
@@ -28,6 +32,8 @@ int main(int argc, char *argv[])
     int jj;
 
     GenericPacket gp;
+
+    char command[COMMAND_SIZE];
 
     /* baudrate 115200, 8 bits, no parity, 1 stop bit */
     /* #define  B57600   0010001 */
@@ -77,8 +83,11 @@ int main(int argc, char *argv[])
     }
 
 
+    fid_sonar = fopen("./output/sonar_output.txt", "w");
+
     create_packet_handling_thread();
     create_read_thread();
+    start_status_updates();
 
     /* retval = create_universal_code_ver(&gp, test_str); */
     /* serial_write_array(gp.gp, gp.packet_length, &bytes_written); */
@@ -89,25 +98,32 @@ int main(int argc, char *argv[])
     do
     {
        key = getkey();
-       if(key == 'x')
+       if(key != EOF)
        {
-          cont = 0;
-       }
-       else if(key == 't')
-       {
-          /* serial_write_array((uint8_t *)test_str, strlen(test_str), &bytes_written); */
-          /* uint8_t create_universal_code_ver(GenericPacket *packet, char *codever); */
-          retval = create_universal_code_ver(&gp, test_str);
-          /* retval = create_universal_ack(&gp); */
-          printf("Write universal code version packet! Length = %u\n", gp.packet_length);
-          printf("Send:\n");
-          for(jj=0; jj<gp.packet_length; jj++)
+          if(key == 'x')
           {
-             printf("0x%2X ", gp.gp[jj]);
+             cont = 0;
           }
-          printf("\nReceive:\n");
-          serial_write_array(gp.gp, gp.packet_length, &bytes_written);
+          else if(key == 't')
+          {
+             /* serial_write_array((uint8_t *)test_str, strlen(test_str), &bytes_written); */
+             /* uint8_t create_universal_code_ver(GenericPacket *packet, char *codever); */
+             retval = create_universal_code_ver(&gp, test_str);
+             /* retval = create_universal_ack(&gp); */
+             printf("Write universal code version packet! Length = %u\n", gp.packet_length);
+             printf("Send:\n");
+             for(jj=0; jj<gp.packet_length; jj++)
+             {
+                printf("0x%2X ", gp.gp[jj]);
+             }
+             printf("\nReceive:\n");
+             serial_write_array(gp.gp, gp.packet_length, &bytes_written);
+          }
        }
+       /* else */
+       /* { */
+       /*    printf("No key available!\n"); */
+       /* } */
 
     }while(cont);
 
