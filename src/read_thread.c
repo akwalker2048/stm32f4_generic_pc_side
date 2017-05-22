@@ -58,6 +58,7 @@ void *read_thread(void *ptr)
                   if(retval == GP_ERROR_CHECKSUM_MISMATCH)
                   {
                      printf("Checksum Fail!\n");
+                     gp_print_packet(receive_packet);
                   }
                }
             }

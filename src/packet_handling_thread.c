@@ -8,7 +8,9 @@
 #include "create_image.h"
 #include "create_image_rgb.h"
 
+extern FILE *fid_pc_comm_out;
 extern FILE *fid_sonar;
+extern FILE *fid_motor;
 
 #define NUM_PIXELS (VOSPI_ROWS * VOSPI_COLS)
 uint16_t pixels[NUM_PIXELS];
@@ -38,6 +40,7 @@ void *packet_handling_thread(void *ptr)
    uint32_t ii, aa;
 
    uint32_t word;
+   float flt;
 
    char codever[256];
    char ustr[256];
@@ -52,6 +55,10 @@ void *packet_handling_thread(void *ptr)
    double std_dist = 0.0;
    double sum_x_squared = 0.0;
    double dist;
+
+   float p, i, d;
+
+   motor_feedback_t mf;
 
    float pos_rad;
 
@@ -75,14 +82,14 @@ void *packet_handling_thread(void *ptr)
                         break;
                      case UNIVERSAL_TIMESTAMP:
                         retval = extract_universal_timestamp(gp_ptr, &timestamp);
-                        printf("timestamp:  %u\n", timestamp);
+                        fprintf(fid_pc_comm_out, "timestamp:  %u\n", timestamp);
                         break;
                      case UNIVERSAL_ACK:
-                        printf("We got an ACK!\n");
+                        fprintf(fid_pc_comm_out, "We got an ACK!\n");
                         break;
                      case UNIVERSAL_STRING:
                         retval = extract_universal_string(gp_ptr, ustr);
-                        printf("UNIVERSAL_STRING:  %s\n", ustr);
+                        fprintf(fid_pc_comm_out, "UNIVERSAL_STRING:  %s\n", ustr);
                         break;
                      case UNIVERSAL_BYTE:
                         break;
@@ -90,17 +97,19 @@ void *packet_handling_thread(void *ptr)
                         break;
                      case UNIVERSAL_WORD:
                         retval = extract_universal_word(gp_ptr, &word);
-                        printf("UNIVERSAL_WORD:  %u\n", word);
+                        fprintf(fid_pc_comm_out, "UNIVERSAL_WORD:  %u\n", word);
                         break;
                      case UNIVERSAL_FLOAT:
+                        retval = extract_universal_float(gp_ptr, &flt);
+                        fprintf(fid_pc_comm_out, "UNIVERSAL_FLOAT:  %f\n", flt);
                         break;
                      case UNIVERSAL_CODE_VER:
                         retval = extract_universal_code_ver(gp_ptr, codever);
-                        printf("Code Version:  %s\n", codever);
+                        fprintf(fid_pc_comm_out, "Code Version:  %s\n", codever);
                         break;
                      default:
                         /* Unhandled packet within project. */
-                        printf("Unhandled Universal Packet!\n");
+                        fprintf(fid_pc_comm_out, "Unhandled Universal Packet!\n");
                         break;
                   }
                }
@@ -118,7 +127,7 @@ void *packet_handling_thread(void *ptr)
                               if(retval == GP_SUCCESS)
                               {
                                  /* We got a good frame...now what? */
-                                 printf("%u(%u):We got a good lepton frame! h(%u) t(%u)\n", vospi_frame.number, vospi_frame.type, gp_circ_buffer_head, gp_circ_buffer_tail);
+                                 fprintf(fid_pc_comm_out, "%u(%u):We got a good lepton frame! h(%u) t(%u)\n", vospi_frame.number, vospi_frame.type, gp_circ_buffer_head, gp_circ_buffer_tail);
 
                                  for(ii=0; ii<VOSPI_COLS; ii++)
                                  {
@@ -140,31 +149,31 @@ void *packet_handling_thread(void *ptr)
                               }
                               else
                               {
-                                 printf("Unable to decode lepton frame!  %u\n", retval);
+                                 fprintf(fid_pc_comm_out, "Unable to decode lepton frame!  %u\n", retval);
                               }
                            }
                            else
                            {
-                              printf("Unable to extract lepton frame!  %u\n", retval);
+                              fprintf(fid_pc_comm_out, "Unable to extract lepton frame!  %u\n", retval);
                            }
                         }
                         break;
                      case THERMAL_BEGIN_LEPTON_IMAGE:
                         {
                            extract_thermal_begin_lepton_image(gp_ptr, &image_num, &time_ms);
-                           printf("image_num = %u\ttime_ms = %u\n", image_num, time_ms);
+                           fprintf(fid_pc_comm_out, "image_num = %u\ttime_ms = %u\n", image_num, time_ms);
                         }
                         break;
                      case THERMAL_END_LEPTON_IMAGE:
                         {
-                           printf("End Image!\n");
+                           fprintf(fid_pc_comm_out, "End Image!\n");
                            create_image(pixels, VOSPI_COLS, VOSPI_ROWS, image_num);
                            create_image_rgb(pixels, VOSPI_COLS, VOSPI_ROWS, image_num);
                         }
                         break;
                      case THERMAL_IMAGE_TIMEOUT:
                         {
-                           printf("Image Timeout!\n");
+                           fprintf(fid_pc_comm_out, "Image Timeout!\n");
                         }
                         break;
                      default:
@@ -179,12 +188,12 @@ void *packet_handling_thread(void *ptr)
                   {
                      case ANALOG_VOLTAGE:
                         retval = extract_analog_voltage(gp_ptr, &voltage);
-                        printf("Analog Voltage = %f!\n", voltage);
+                        fprintf(fid_pc_comm_out, "Analog Voltage = %f!\n", voltage);
                         break;
                      case ANALOG_BATTERY_VOLTAGE:
                         retval = extract_analog_voltage(gp_ptr, &voltage);
                         aa++;
-                        /* printf("Analog Battery Voltage = %f!\n", voltage); */
+                        /* fprintf(fid_pc_comm_out, "Analog Battery Voltage = %f!\n", voltage); */
 
                         /* Distance in Inches */
                         dist = (voltage*512.0/4.8);
@@ -216,8 +225,8 @@ void *packet_handling_thread(void *ptr)
                         {
                            avg_dist = sum_dist / (double)NUM_SAMPLES;
                            std_dist = sqrt((sum_x_squared / (double)NUM_SAMPLES) - pow(avg_dist, 2.0));
-                           printf("Avg Analog Sonar Distance = %f\tmax(%f)\tmin(%f)\tstd(%f)\n", avg_dist, max_dist, min_dist, std_dist);
-                           printf("%.2f\t%.2f\t%.2f\t%.2f\n\n", avg_dist, max_dist, min_dist, std_dist);
+                           fprintf(fid_pc_comm_out, "Avg Analog Sonar Distance = %f\tmax(%f)\tmin(%f)\tstd(%f)\n", avg_dist, max_dist, min_dist, std_dist);
+                           fprintf(fid_pc_comm_out, "%.2f\t%.2f\t%.2f\t%.2f\n\n", avg_dist, max_dist, min_dist, std_dist);
 
                            sum_x_squared = 0.0;
                            sum_dist = 0.0;
@@ -239,7 +248,7 @@ void *packet_handling_thread(void *ptr)
                   {
                      case SONAR_MAXBOT_SERIAL:
                         retval = extract_sonar_maxbot_serial(gp_ptr, &inches);
-                        printf("Sonar Dist (inches):  %u\n", inches);
+                        fprintf(fid_pc_comm_out, "Sonar Dist (inches):  %u\n", inches);
                         break;
                      default:
                         /* Unhandled Sonar Packet */
@@ -251,9 +260,33 @@ void *packet_handling_thread(void *ptr)
                {
                   switch(gp_ptr->gp[GP_LOC_PROJ_SPEC])
                   {
+                     case MOTOR_FEEDBACK:
+                        retval = extract_motor_feedback(gp_ptr, &mf);
+                        /* fprintf(fid_pc_comm_out, "MF:  time(%f)\tcmd(%f)\tmsr(%f)\terr(%f)\tierr(%f)\tderr(%f)\tout(%f)\tencoder(%u)\n", mf.time, mf.cmd, mf.msr, mf.err, mf.ierr, mf.derr, mf.out, mf.encoder); */
+                        fprintf(fid_motor, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%u\n", mf.time, mf.cmd, mf.msr, mf.err, mf.ierr, mf.derr, mf.out, mf.encoder);
+                        fflush(fid_motor);
+                        break;
                      case MOTOR_RESP_POSITION:
                         retval = extract_motor_resp_position(gp_ptr, &pos_rad);
-                        printf("Motor Pos (rad):  %f\n", pos_rad);
+                        /* fprintf(fid_pc_comm_out, "Motor Pos (rad):  %f\n", pos_rad); */
+                        break;
+                     case MOTOR_SET_PID:
+                        retval = extract_motor_set_pid(gp_ptr, &p, &i, &d);
+                        fprintf(fid_pc_comm_out, "MOTOR_SET_PID:  p(%f)\ti(%f)\td(%f)\n", p, i, d);
+                        /* printf("MOTOR_SET_PID:  p(%f)\ti(%f)\td(%f)\n", p, i, d); */
+                        break;
+                     case MOTOR_RESP_PID:
+                        retval = extract_motor_resp_pid(gp_ptr, &p, &i, &d);
+                        fprintf(fid_pc_comm_out, "MOTOR_RESP_PID:  p(%f)\ti(%f)\td(%f)\n", p, i, d);
+                        /* printf("MOTOR_RESP_PID:  p(%f)\ti(%f)\td(%f)\n", p, i, d); */
+                        break;
+                     case MOTOR_START:
+                        fprintf(fid_pc_comm_out, "MOTOR_START\n");
+                        /* printf("MOTOR_START\n"); */
+                        break;
+                     case MOTOR_STOP:
+                        fprintf(fid_pc_comm_out, "MOTOR_STOP\n");
+                        /* printf("MOTOR_STOP\n"); */
                         break;
                      default:
                         /* Unhandled Motor Packet */
@@ -265,13 +298,18 @@ void *packet_handling_thread(void *ptr)
                /* Increment status variable to let us know we have an
                 * unhandled project type.
                 */
-               printf("Unhandled Project!\n");
+               fprintf(fid_pc_comm_out, "Unhandled Project!\n");
                break;
          }
       }
+
+      fflush(fid_pc_comm_out);
+
    }
 
+   fclose(fid_pc_comm_out);
    fclose(fid_sonar);
+   fclose(fid_motor);
 
 }
 

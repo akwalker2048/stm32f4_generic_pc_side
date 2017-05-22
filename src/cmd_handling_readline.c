@@ -23,24 +23,31 @@ int execute_line (char *line);
 extern char *getwd ();
 extern char *xmalloc ();
 
-/* The names of functions that actually do the manipulation. */
-int motor_start();
-int motor_stop();
+int motor_start(char *arg);
+int motor_stop(char *arg);
+int motor_set_pid(char *arg);
 
-/* A structure which contains information on the commands this program
-   can understand. */
+
+typedef int (*command_func_ptr)(char *);
 
 typedef struct {
   char *name;			/* User printable name of the function. */
-  Function *func;		/* Function to call to do the job. */
+  command_func_ptr func;		/* Function to call to do the job. */
   char *doc;			/* Documentation for this function.  */
 } COMMAND;
 
-COMMAND commands[] = {
-  { "motor_start", motor_start, "Send MOTOR_START packet!" },
-  { "motor_stop", motor_stop, "Send MOTOR_STOP packet!" },
-  { (char *)NULL, (Function *)NULL, (char *)NULL }
-};
+#define NUM_COMMANDS 4
+command_func_ptr null_func_ptr = NULL;
+char *motor_start_name = "motor_start";
+char *motor_start_doc = "Send MOTOR_START packet!";
+command_func_ptr motor_start_ptr = (command_func_ptr)&motor_start;
+char *motor_stop_name = "motor_stop";
+char *motor_stop_doc = "Send MOTOR_STOP packet!";
+command_func_ptr motor_stop_ptr = (command_func_ptr)&motor_stop;
+char *motor_set_pid_name = "motor_set_pid";
+char *motor_set_pid_doc = "Send MOTOR_SET_PID (motor_set_pid 1.0f 0.05f 0.005f)";
+command_func_ptr motor_set_pid_ptr = (command_func_ptr)&motor_set_pid;
+COMMAND commands[NUM_COMMANDS];
 
 /* Forward declarations. */
 char *stripwhite ();
@@ -185,11 +192,29 @@ char *command_generator ();
    if not. */
 int initialize_readline(void)
 {
-  /* Allow conditional parsing of the ~/.inputrc file. */
-  rl_readline_name = "main_pc_comm";
 
-  /* Tell the completer that we want a crack first. */
-  /* rl_attempted_completion_function = (CPPFunction *)fileman_completion; */
+   /* Allow conditional parsing of the ~/.inputrc file. */
+   rl_readline_name = "main_pc_comm";
+
+   /* Load Command Structure */
+   commands[0].name = motor_start_name;
+   commands[0].func = motor_start_ptr;
+   commands[0].doc = motor_start_doc;
+
+   commands[1].name = motor_stop_name;
+   commands[1].func = motor_stop_ptr;
+   commands[1].doc = motor_stop_doc;
+
+   commands[2].name = motor_set_pid_name;
+   commands[2].func = motor_set_pid_ptr;
+   commands[2].doc = motor_set_pid_doc;
+
+   commands[NUM_COMMANDS - 1].name = NULL;
+   commands[NUM_COMMANDS - 1].func = null_func_ptr;
+   commands[NUM_COMMANDS - 1].doc = NULL;
+
+   /* Tell the completer that we want a crack first. */
+   /* rl_attempted_completion_function = (CPPFunction *)fileman_completion; */
 }
 
 /* /\* Attempt to complete on the contents of TEXT.  START and END show the */
@@ -281,8 +306,43 @@ int motor_stop (arg)
       arg = "";
 
    retval = create_motor_stop(&gp);
-   printf("Send MOTOR_START\n");
+   printf("Send MOTOR_STOP\n");
    serial_write_array(gp.gp, gp.packet_length, &bytes_written);
+
+  return 0;
+
+}
+
+
+int motor_set_pid (arg)
+     char *arg;
+{
+   GenericPacket gp;
+   uint8_t retval;
+   ssize_t bytes_written;
+
+   float p, i, d;
+
+   int num_args;
+
+   if(arg != NULL)
+   {
+      printf("motor_set_pid %s\n", arg);
+   }
+
+   num_args = sscanf(arg, "%f %f %f", &p, &i, &d);
+   if(num_args == 3)
+   {
+      retval = create_motor_set_pid(&gp, p, i, d);
+      printf("Send MOTOR_SET_PID\n");
+      serial_write_array(gp.gp, gp.packet_length, &bytes_written);
+   }
+   else
+   {
+      printf("motor_set_pid requires 3 arguments!\n");
+      printf("motor_set_pid 1.0 0.2 0.05\n");
+   }
+
 
   return 0;
 

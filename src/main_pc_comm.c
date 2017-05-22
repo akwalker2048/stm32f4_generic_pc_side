@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include <stdint.h>
 
+#include "cmd_handling_readline.h"
+
 #include "keyboard.h"
 #include "pc_serial.h"
 #include "read_thread.h"
@@ -14,7 +16,10 @@
 #include "status_updates.h"
 #include "process_command.h"
 
+FILE *fid_pc_comm_out;
 FILE *fid_sonar;
+FILE *fid_motor;
+
 
 int main(int argc, char *argv[])
 {
@@ -32,6 +37,8 @@ int main(int argc, char *argv[])
     int jj;
 
     GenericPacket gp;
+
+    int cmd_retval;
 
     char command[COMMAND_SIZE];
 
@@ -55,6 +62,10 @@ int main(int argc, char *argv[])
 
     ispeed = B3000000;
     ospeed = B3000000;
+
+    /* ispeed = B1500000; */
+    /* ospeed = B1500000; */
+
     /* ispeed = B115200; */
     /* ospeed = B115200; */
     if(argc == 1)
@@ -82,8 +93,10 @@ int main(int argc, char *argv[])
        exit(-1);
     }
 
-
+    fid_pc_comm_out = fopen("./output/pc_comm_out.txt", "w");
     fid_sonar = fopen("./output/sonar_output.txt", "w");
+    fid_motor = fopen("./output/motor.tsv", "w");
+    fprintf(fid_motor, "#time\tcmd\tmsr\terr\tierr\tderr\toutput\tencoder_cnt\n");
 
     create_packet_handling_thread();
     create_read_thread();
@@ -93,37 +106,60 @@ int main(int argc, char *argv[])
     /* serial_write_array(gp.gp, gp.packet_length, &bytes_written); */
 
 
+    initialize_readline();
+
     /* simple noncanonical input */
     cont = 1;
     do
     {
-       key = getkey();
-       if(key != EOF)
-       {
-          if(key == 'x')
-          {
-             cont = 0;
-          }
-          else if(key == 't')
-          {
-             /* serial_write_array((uint8_t *)test_str, strlen(test_str), &bytes_written); */
-             /* uint8_t create_universal_code_ver(GenericPacket *packet, char *codever); */
-             retval = create_universal_code_ver(&gp, test_str);
-             /* retval = create_universal_ack(&gp); */
-             printf("Write universal code version packet! Length = %u\n", gp.packet_length);
-             printf("Send:\n");
-             for(jj=0; jj<gp.packet_length; jj++)
-             {
-                printf("0x%2X ", gp.gp[jj]);
-             }
-             printf("\nReceive:\n");
-             serial_write_array(gp.gp, gp.packet_length, &bytes_written);
-          }
-       }
-       /* else */
+
+       cmd_retval = cmd_handling_readline();
+
+       /* key = getkey(); */
+       /* if(key != EOF) */
        /* { */
-       /*    printf("No key available!\n"); */
+       /*    if(key == 'x') */
+       /*    { */
+       /*       cont = 0; */
+       /*    } */
+       /*    else if(key == 't') */
+       /*    { */
+       /*       /\* serial_write_array((uint8_t *)test_str, strlen(test_str), &bytes_written); *\/ */
+       /*       /\* uint8_t create_universal_code_ver(GenericPacket *packet, char *codever); *\/ */
+       /*       retval = create_universal_code_ver(&gp, test_str); */
+       /*       /\* retval = create_universal_ack(&gp); *\/ */
+       /*       printf("Write universal code version packet! Length = %u\n", gp.packet_length); */
+       /*       printf("Send:\n"); */
+       /*       for(jj=0; jj<gp.packet_length; jj++) */
+       /*       { */
+       /*          printf("0x%2X ", gp.gp[jj]); */
+       /*       } */
+       /*       printf("\nReceive:\n"); */
+       /*       serial_write_array(gp.gp, gp.packet_length, &bytes_written); */
+       /*    } */
+       /*    else if(key == 'p') */
+       /*    { */
+       /*       retval = create_motor_set_pid(&gp, 2.0f, 0.05f, 0.025f); */
+       /*       printf("Write PID Values!\n"); */
+       /*       serial_write_array(gp.gp, gp.packet_length, &bytes_written); */
+       /*    } */
+       /*    else if(key == 'g') */
+       /*    { */
+       /*       retval = create_motor_start(&gp); */
+       /*       printf("Send MOTOR_START\n"); */
+       /*       serial_write_array(gp.gp, gp.packet_length, &bytes_written); */
+       /*    } */
+       /*    else if(key == 'e') */
+       /*    { */
+       /*       retval = create_motor_stop(&gp); */
+       /*       printf("Send MOTOR_STOP\n"); */
+       /*       serial_write_array(gp.gp, gp.packet_length, &bytes_written); */
+       /*    } */
        /* } */
+       /* /\* else *\/ */
+       /* /\* { *\/ */
+       /* /\*    printf("No key available!\n"); *\/ */
+       /* /\* } *\/ */
 
     }while(cont);
 
