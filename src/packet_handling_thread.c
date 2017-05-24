@@ -48,6 +48,8 @@ void *packet_handling_thread(void *ptr)
    float voltage;
    uint8_t inches;
 
+   uint8_t byte;
+
    double avg_dist = 0.0;
    double max_dist = 0.0;
    double min_dist = 0.0;
@@ -92,6 +94,8 @@ void *packet_handling_thread(void *ptr)
                         fprintf(fid_pc_comm_out, "UNIVERSAL_STRING:  %s\n", ustr);
                         break;
                      case UNIVERSAL_BYTE:
+                        retval = extract_universal_byte(gp_ptr, &byte);
+                        printf("Universal Byte!\t %u\n", byte);
                         break;
                      case UNIVERSAL_CHOMP:
                         break;
