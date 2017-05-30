@@ -130,7 +130,7 @@ uint8_t serial_write_array(uint8_t *bytes_to_write, uint32_t num_bytes_to_write,
 {
    uint32_t remainder, additional, new_num;
    uint8_t cpy_bytes[512];
-   uint32_t ii;
+   uint32_t ii, dd;
 
 
    /* 4 Byte Boundary!
@@ -170,6 +170,13 @@ uint8_t serial_write_array(uint8_t *bytes_to_write, uint32_t num_bytes_to_write,
    if(fd != 0)
    {
       pthread_mutex_lock(&serial_mutex);
+
+      /* Temporary debug. */
+      printf("Sending Packet:\n");
+      for(dd=0; dd<new_num; dd++)
+      {
+         printf("%u\t0x%X\n", dd, cpy_bytes[dd]);
+      }
 
       /* *num_bytes_written = write(fd, bytes_to_write, num_bytes_to_write); */
       *num_bytes_written = write(fd, cpy_bytes, new_num);

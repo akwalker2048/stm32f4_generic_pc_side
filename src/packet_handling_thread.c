@@ -27,6 +27,9 @@ GenericPacket gp_circ_buffer[GP_CIRC_BUFFER_SIZE];
 uint32_t gp_circ_buffer_head = 0;
 uint32_t gp_circ_buffer_tail = 0;
 
+uint8_t barray[255];
+uint8_t balen;
+
 #define NUM_SAMPLES 32
 
 void *packet_handling_thread(void *ptr)
@@ -37,7 +40,7 @@ void *packet_handling_thread(void *ptr)
    VOSPIFrame vospi_frame;
    uint32_t timestamp;
 
-   uint32_t ii, aa;
+   uint32_t ii, aa, bb;
 
    uint32_t word;
    float flt;
@@ -110,6 +113,14 @@ void *packet_handling_thread(void *ptr)
                      case UNIVERSAL_CODE_VER:
                         retval = extract_universal_code_ver(gp_ptr, codever);
                         fprintf(fid_pc_comm_out, "Code Version:  %s\n", codever);
+                        break;
+                     case UNIVERSAL_BYTE_ARRAY:
+                        retval = extract_universal_byte_array(gp_ptr, barray, &balen);
+                        fprintf(fid_pc_comm_out, "UNIVERSAL_BYTE_ARRAY:\n");
+                        for(bb=0; bb<balen; bb++)
+                        {
+                           fprintf(fid_pc_comm_out, "%u:\t0x%X\n", bb, barray[bb]);
+                        }
                         break;
                      default:
                         /* Unhandled packet within project. */
