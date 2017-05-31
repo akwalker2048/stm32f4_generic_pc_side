@@ -5,6 +5,7 @@
 #include "gp_proj_analog.h"
 #include "gp_proj_sonar.h"
 #include "gp_proj_motor.h"
+#include "gp_proj_rs485_sb.h"
 
 void create_packet_handling_thread(void);
 void join_packet_handling_thread(void);

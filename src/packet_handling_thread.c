@@ -61,6 +61,10 @@ void *packet_handling_thread(void *ptr)
    double sum_x_squared = 0.0;
    double dist;
 
+   uint8_t address;
+   uint8_t sensor_type;
+   PoseIsh pish;
+
    float p, i, d;
 
    motor_feedback_t mf;
@@ -308,6 +312,20 @@ void *packet_handling_thread(void *ptr)
                         break;
                   }
                }
+               break;
+            case GP_PROJ_RS485_SB:
+               {
+                  switch(gp_ptr->gp[GP_LOC_PROJ_SPEC])
+                  {
+                     case RS485_RESP_SENSOR_INFO:
+                        retval = extract_rs485_resp_sensor_info(gp_ptr, &address, &sensor_type, &pish);
+                        fprintf(fid_pc_comm_out, "RS485_RESP_SENSOR_INFO:  0x%X, 0x%X, %f, %f, %f, %f, %f, %f\n", address, sensor_type, pish.x, pish.y, pish.z, pish.roll, pish.pitch, pish.yaw);
+                        break;
+                     default:
+                        fprintf(fid_pc_comm_out, "Unhandled GP_PROJ_RS485_SB packet!\n");
+                        break;
+                  } /* switch(GP_LOC_PROJ_SPEC) */
+               } /* GP_PROJ_RS485_SB */
                break;
             default:
                /* Increment status variable to let us know we have an
