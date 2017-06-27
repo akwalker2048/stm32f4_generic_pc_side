@@ -317,6 +317,10 @@ void *packet_handling_thread(void *ptr)
                {
                   switch(gp_ptr->gp[GP_LOC_PROJ_SPEC])
                   {
+                     case RS485_QUERY_SENSOR_INFO:
+                        retval = extract_rs485_query_sensor_info(gp_ptr, &address);
+                        fprintf(fid_pc_comm_out, "RS485_QUERY_SENSOR_INFO:  0x%X\n", address);
+                        break;
                      case RS485_RESP_SENSOR_INFO:
                         retval = extract_rs485_resp_sensor_info(gp_ptr, &address, &sensor_type, &pish);
                         fprintf(fid_pc_comm_out, "RS485_RESP_SENSOR_INFO:  0x%X, 0x%X, %f, %f, %f, %f, %f, %f\n", address, sensor_type, pish.x, pish.y, pish.z, pish.roll, pish.pitch, pish.yaw);

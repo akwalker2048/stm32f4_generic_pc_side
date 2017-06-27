@@ -21,6 +21,7 @@ uint8_t open_serial_interface(char *port, int ispeed, int ospeed)
 
    if(strncmp(port, "default", 7) == 0)
    {
+      /* fd = open(default_portname, O_RDWR | O_NOCTTY | O_SYNC | O_NONBLOCK); */
       fd = open(default_portname, O_RDWR | O_NOCTTY | O_SYNC);
       if(fd < 0)
       {
@@ -30,6 +31,7 @@ uint8_t open_serial_interface(char *port, int ispeed, int ospeed)
    }
    else
    {
+      /* fd = open(port, O_RDWR | O_NOCTTY | O_SYNC | O_NONBLOCK); */
       fd = open(port, O_RDWR | O_NOCTTY | O_SYNC);
       if(fd < 0)
       {
@@ -121,6 +123,7 @@ uint8_t set_serial_interface_attribs(int ispeed, int ospeed)
       return SERIAL_ERROR_SET_ATTR;
    }
 
+
    return 0;
 }
 
@@ -150,6 +153,7 @@ uint8_t serial_write_array(uint8_t *bytes_to_write, uint32_t num_bytes_to_write,
    {
       additional = 0;
    }
+   /* new_num = num_bytes_to_write + additional + 1; */
    new_num = num_bytes_to_write + additional;
 
    /* printf("num_bytes_to_write:\t%u\n", num_bytes_to_write); */
@@ -165,18 +169,19 @@ uint8_t serial_write_array(uint8_t *bytes_to_write, uint32_t num_bytes_to_write,
    {
       cpy_bytes[ii] = 0x00;
    }
+   /* cpy_bytes[new_num-1] = '\n'; */
 
 
    if(fd != 0)
    {
       pthread_mutex_lock(&serial_mutex);
 
-      /* Temporary debug. */
-      printf("Sending Packet:\n");
-      for(dd=0; dd<new_num; dd++)
-      {
-         printf("%u\t0x%X\n", dd, cpy_bytes[dd]);
-      }
+      /* /\* Temporary debug. *\/ */
+      /* printf("Sending Packet:\n"); */
+      /* for(dd=0; dd<new_num; dd++) */
+      /* { */
+      /*    printf("%u\t0x%X\n", dd, cpy_bytes[dd]); */
+      /* } */
 
       /* *num_bytes_written = write(fd, bytes_to_write, num_bytes_to_write); */
       *num_bytes_written = write(fd, cpy_bytes, new_num);
@@ -191,6 +196,11 @@ uint8_t serial_write_array(uint8_t *bytes_to_write, uint32_t num_bytes_to_write,
          printf("Partial Write!\n");
          return SERIAL_ERROR_PARTIAL_WRITE;
       }
+      printf("Call fsync\n");
+      fsync(fd);
+      printf("Call tcdrain\n");
+      tcdrain(fd);
+      printf("Sync'd and Drain'd!\n");
 
       pthread_mutex_unlock(&serial_mutex);
    }
