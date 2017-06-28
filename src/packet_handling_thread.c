@@ -71,6 +71,9 @@ void *packet_handling_thread(void *ptr)
 
    float pos_rad;
 
+   uint16_t tmc_position, tmc_stall_guard, tmc_current;
+   uint8_t tmc_status_byte;
+
    while(cont_packet_handling_thread)
    {
       while(gp_circ_buffer_head != gp_circ_buffer_tail)
@@ -287,7 +290,7 @@ void *packet_handling_thread(void *ptr)
                         break;
                      case MOTOR_RESP_POSITION:
                         retval = extract_motor_resp_position(gp_ptr, &pos_rad);
-                        /* fprintf(fid_pc_comm_out, "Motor Pos (rad):  %f\n", pos_rad); */
+                        fprintf(fid_pc_comm_out, "Motor Pos (rad):  %f\n", pos_rad);
                         break;
                      case MOTOR_SET_PID:
                         retval = extract_motor_set_pid(gp_ptr, &p, &i, &d);
@@ -306,6 +309,10 @@ void *packet_handling_thread(void *ptr)
                      case MOTOR_STOP:
                         fprintf(fid_pc_comm_out, "MOTOR_STOP\n");
                         /* printf("MOTOR_STOP\n"); */
+                        break;
+                     case MOTOR_TMC260_RESP_STATUS:
+                        retval = extract_motor_tmc260_resp_status(gp_ptr, &tmc_position, &tmc_stall_guard, &tmc_current, &tmc_status_byte);
+                           fprintf(fid_pc_comm_out, "MOTOR_TMC260_RESP_STATUS: pos(%u)\tsg(%u)\tcur(%u)\tstatus(0x%X)\n", tmc_position, tmc_stall_guard, tmc_current, tmc_status_byte);
                         break;
                      default:
                         /* Unhandled Motor Packet */
