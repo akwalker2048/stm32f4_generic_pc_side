@@ -105,7 +105,7 @@ void *packet_handling_thread(void *ptr)
                         break;
                      case UNIVERSAL_BYTE:
                         retval = extract_universal_byte(gp_ptr, &byte);
-                        printf("Universal Byte!\t %u\n", byte);
+                        printf("Universal Byte!\t %u (0x%X)\n", byte, byte);
                         break;
                      case UNIVERSAL_CHOMP:
                         break;

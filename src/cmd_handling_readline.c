@@ -26,6 +26,7 @@ extern char *xmalloc ();
 int motor_start(char *arg);
 int motor_stop(char *arg);
 int motor_set_pid(char *arg);
+int motor_tmc260_query_status(char *arg);
 
 
 typedef int (*command_func_ptr)(char *);
@@ -36,17 +37,24 @@ typedef struct {
   char *doc;			/* Documentation for this function.  */
 } COMMAND;
 
-#define NUM_COMMANDS 4
+#define NUM_COMMANDS 5
 command_func_ptr null_func_ptr = NULL;
 char *motor_start_name = "motor_start";
 char *motor_start_doc = "Send MOTOR_START packet!";
 command_func_ptr motor_start_ptr = (command_func_ptr)&motor_start;
+
 char *motor_stop_name = "motor_stop";
 char *motor_stop_doc = "Send MOTOR_STOP packet!";
 command_func_ptr motor_stop_ptr = (command_func_ptr)&motor_stop;
+
 char *motor_set_pid_name = "motor_set_pid";
 char *motor_set_pid_doc = "Send MOTOR_SET_PID (motor_set_pid 1.0f 0.05f 0.005f)";
 command_func_ptr motor_set_pid_ptr = (command_func_ptr)&motor_set_pid;
+
+char *motor_tmc260_query_status_name = "motor_tmc260_query_status";
+char *motor_tmc260_query_status_doc = "Send MOTOR_TMC260_QUERY_STATUS";
+command_func_ptr motor_tmc260_query_status_ptr = (command_func_ptr)&motor_tmc260_query_status;
+
 COMMAND commands[NUM_COMMANDS];
 
 /* Forward declarations. */
@@ -209,6 +217,10 @@ int initialize_readline(void)
    commands[2].func = motor_set_pid_ptr;
    commands[2].doc = motor_set_pid_doc;
 
+   commands[3].name = motor_tmc260_query_status_name;
+   commands[3].func = motor_tmc260_query_status_ptr;
+   commands[3].doc = motor_tmc260_query_status_doc;
+
    commands[NUM_COMMANDS - 1].name = NULL;
    commands[NUM_COMMANDS - 1].func = null_func_ptr;
    commands[NUM_COMMANDS - 1].doc = NULL;
@@ -341,6 +353,51 @@ int motor_set_pid (arg)
    {
       printf("motor_set_pid requires 3 arguments!\n");
       printf("motor_set_pid 1.0 0.2 0.05\n");
+   }
+
+
+  return 0;
+
+}
+
+
+int motor_tmc260_query_status (arg)
+     char *arg;
+{
+   GenericPacket gp;
+   uint8_t retval;
+   ssize_t bytes_written;
+
+   uint8_t status_type;
+   uint status_type_temp;
+
+   int num_args;
+
+   if(arg != NULL)
+   {
+      printf("motor_tmc260_query_status %s\n", arg);
+   }
+
+   num_args = sscanf(arg, "%u", &status_type_temp);
+   status_type = 0xFF&status_type_temp;
+   if(status_type > 2)
+   {
+      printf("Warning status_type can only be 0, 1, 0r 2!\n");
+      status_type = 0;
+   }
+
+   if(num_args == 1)
+   {
+      retval = create_motor_tmc260_query_status(&gp, status_type);
+      printf("Send MOTOR_TMC260_QUERY_STATUS\n");
+      serial_write_array(gp.gp, gp.packet_length, &bytes_written);
+   }
+   else
+   {
+      printf("motor_tmc260_query_status requires 1 arguments!\n");
+      printf("motor_tmc260_query_status 0 /* Position Feedback */\n");
+      printf("motor_tmc260_query_status 1 /* Stallgaurd Feedback */\n");
+      printf("motor_tmc260_query_status 2 /* Stallgaurd + Current Feedback */\n");
    }
 
 
