@@ -196,11 +196,11 @@ uint8_t serial_write_array(uint8_t *bytes_to_write, uint32_t num_bytes_to_write,
          printf("Partial Write!\n");
          return SERIAL_ERROR_PARTIAL_WRITE;
       }
-      printf("Call fsync\n");
+      /* printf("Call fsync\n"); */
       fsync(fd);
-      printf("Call tcdrain\n");
+      /* printf("Call tcdrain\n"); */
       tcdrain(fd);
-      printf("Sync'd and Drain'd!\n");
+      /* printf("Sync'd and Drain'd!\n"); */
 
       pthread_mutex_unlock(&serial_mutex);
    }

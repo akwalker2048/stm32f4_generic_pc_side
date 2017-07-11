@@ -503,7 +503,7 @@ int motor_tmc260_query_status(char *arg)
    if(num_args == 1)
    {
       retval = create_motor_tmc260_query_status(&gp, status_type);
-      printf("Send MOTOR_TMC260_QUERY_STATUS\n");
+      printf("Send MOTOR_TMC260_QUERY_STATUS type(%u)\n", status_type);
       serial_write_array(gp.gp, gp.packet_length, &bytes_written);
    }
    else
