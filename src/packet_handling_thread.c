@@ -70,6 +70,7 @@ void *packet_handling_thread(void *ptr)
    motor_feedback_t mf;
 
    float pos_rad;
+   uint32_t pos_ts;
 
    uint16_t tmc_position, tmc_stall_guard, tmc_current;
    uint8_t tmc_status_byte;
@@ -291,6 +292,10 @@ void *packet_handling_thread(void *ptr)
                      case MOTOR_RESP_POSITION:
                         retval = extract_motor_resp_position(gp_ptr, &pos_rad);
                         fprintf(fid_pc_comm_out, "Motor Pos (rad):  %f\n", pos_rad);
+                        break;
+                     case MOTOR_RESP_POSITION_TS:
+                        retval = extract_motor_resp_position_ts(gp_ptr, &pos_rad, &pos_ts);
+                        fprintf(fid_pc_comm_out, "Motor Pos (rad):  %f (%u ms)\n", pos_rad, pos_ts);
                         break;
                      case MOTOR_SET_PID:
                         retval = extract_motor_set_pid(gp_ptr, &p, &i, &d);
