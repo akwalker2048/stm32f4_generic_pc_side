@@ -312,7 +312,8 @@ void *packet_handling_thread(void *ptr)
                         break;
                      case MOTOR_TMC260_RESP_STATUS:
                         retval = extract_motor_tmc260_resp_status(gp_ptr, &tmc_position, &tmc_stall_guard, &tmc_current, &tmc_status_byte);
-                           fprintf(fid_pc_comm_out, "MOTOR_TMC260_RESP_STATUS: pos(%u)\tsg(%u)\tcur(%u)\tstatus(0x%X)\n", tmc_position, tmc_stall_guard, tmc_current, tmc_status_byte);
+                        /* fprintf(fid_pc_comm_out, "MOTOR_TMC260_RESP_STATUS: pos(%u)\tsg(%u)\tcur(%u)\tstatus(0x%X)\n", tmc_position, tmc_stall_guard, tmc_current, tmc_status_byte); */
+                        printf("MOTOR_TMC260_RESP_STATUS: pos(%u)\tsg(%u)\tcur(%u)\tstatus(0x%X)\n", tmc_position, tmc_stall_guard, tmc_current, tmc_status_byte);
                         break;
                      default:
                         /* Unhandled Motor Packet */
