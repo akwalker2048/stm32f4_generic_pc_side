@@ -27,6 +27,7 @@ int motor_start(char *arg);
 int motor_stop(char *arg);
 int motor_home(char *arg);
 int motor_set_pos(char *arg);
+int motor_set_tilt_mult(char *arg);
 int motor_set_pid(char *arg);
 int motor_tmc260_query_status(char *arg);
 int motor_tmc260_set_drvctrl_sdon(char *arg);
@@ -44,7 +45,7 @@ typedef struct {
   char *doc;			/* Documentation for this function.  */
 } COMMAND;
 
-#define NUM_COMMANDS 12
+#define NUM_COMMANDS 13
 command_func_ptr null_func_ptr = NULL;
 
 char *motor_start_name = "motor_start";
@@ -62,6 +63,10 @@ command_func_ptr motor_home_ptr = (command_func_ptr)&motor_home;
 char *motor_set_pos_name = "motor_set_pos";
 char *motor_set_pos_doc = "Send MOTOR_SET_POSITION packet!";
 command_func_ptr motor_set_pos_ptr = (command_func_ptr)&motor_set_pos;
+
+char *motor_set_tilt_mult_name = "motor_set_tilt_mult";
+char *motor_set_tilt_mult_doc = "Send MOTOR_SET_TILT_MULTIPLIER packet!";
+command_func_ptr motor_set_tilt_mult_ptr = (command_func_ptr)&motor_set_tilt_mult;
 
 char *motor_set_pid_name = "motor_set_pid";
 char *motor_set_pid_doc = "Send MOTOR_SET_PID (motor_set_pid 1.0f 0.05f 0.005f)";
@@ -264,6 +269,11 @@ int initialize_readline(void)
    commands[cmd_num].doc = motor_set_pos_doc;
 
    cmd_num++;
+   commands[cmd_num].name = motor_set_tilt_mult_name;
+   commands[cmd_num].func = motor_set_tilt_mult_ptr;
+   commands[cmd_num].doc = motor_set_tilt_mult_doc;
+
+   cmd_num++;
    commands[cmd_num].name = motor_set_pid_name;
    commands[cmd_num].func = motor_set_pid_ptr;
    commands[cmd_num].doc = motor_set_pid_doc;
@@ -441,6 +451,36 @@ int motor_set_pos(char *arg)
    }
 
 }
+
+
+int motor_set_tilt_mult(char *arg)
+{
+   GenericPacket gp;
+   uint8_t retval;
+   ssize_t bytes_written;
+   float mult;
+   int num_args;
+
+   num_args = sscanf(arg, "%f", &mult);
+
+   if(num_args != 1)
+   {
+
+   }
+   else
+   {
+      if((mult < 0.01f)||(mult > 100.0f))
+      {
+         mult = 1.0f;
+      }
+
+      retval = create_motor_set_tilt_multiplier(&gp, mult);
+      printf("Send MOTOR_SET_TILT_MULTIPLIER\n");
+      serial_write_array(gp.gp, gp.packet_length, &bytes_written);
+   }
+
+}
+
 
 int motor_set_pid(char *arg)
 {
