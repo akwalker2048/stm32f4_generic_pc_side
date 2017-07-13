@@ -63,8 +63,8 @@ int main(int argc, char *argv[])
     ispeed = B3000000;
     ospeed = B3000000;
 
-    /* ispeed = B1500000; */
-    /* ospeed = B1500000; */
+    /* ispeed = B2000000; */
+    /* ospeed = B2000000; */
 
     /* ispeed = B115200; */
     /* ospeed = B115200; */
