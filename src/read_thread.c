@@ -32,6 +32,18 @@ void *read_thread(void *ptr)
    while(cont_read_thread)
    {
       retval = serial_read_array(read_buffer, READ_BLOCK_SIZE, &bytes_read);
+      if(retval != SERIAL_SUCCESS)
+      {
+         if(retval == SERIAL_ERROR_PARTIAL_READ)
+         {
+            printf("Serial partial read\n");
+         }
+         else
+         {
+            printf("Serial read error!!!!\n");
+         }
+      }
+
       if(retval == SERIAL_ERROR_READ)
       {
          printf("Bailing out on read_thread!\n");

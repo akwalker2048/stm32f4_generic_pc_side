@@ -1,6 +1,7 @@
 #ifndef INIT_SERIAL_H
 #define INIT_SERIAL_H
 
+#define SERIAL_SUCCESS              0
 #define SERIAL_ERROR_OPEN_DEFAULT   1
 #define SERIAL_ERROR_OPEN_USER      2
 #define SERIAL_ERROR_GET_ATTR       3

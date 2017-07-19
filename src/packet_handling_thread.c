@@ -95,7 +95,7 @@ void *packet_handling_thread(void *ptr)
                         break;
                      case UNIVERSAL_TIMESTAMP:
                         retval = extract_universal_timestamp(gp_ptr, &timestamp);
-                        fprintf(fid_pc_comm_out, "timestamp:  %u\n", timestamp);
+                        fprintf(fid_pc_comm_out, "timestamp:  0x%X\n", timestamp);
                         break;
                      case UNIVERSAL_ACK:
                         fprintf(fid_pc_comm_out, "We got an ACK!\n");
